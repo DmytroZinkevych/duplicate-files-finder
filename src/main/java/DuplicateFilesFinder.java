@@ -20,12 +20,14 @@ public class DuplicateFilesFinder {
             String checksum
     ) { }
 
-    private static final String SOURCE_DIR = "." + File.separator + "files";
-    private static final String DUPLICATES_DIR = SOURCE_DIR + File.separator + "duplicates";
-
     public static void main(String[] args) {
-        try (Stream<Path> stream = Files.list(Path.of(SOURCE_DIR))) {
-            Files.createDirectories(Paths.get(DUPLICATES_DIR));
+        String sourceDir = args.length == 0
+                ? "." + File.separator
+                : args[0];
+        String duplicatesDir = sourceDir + File.separator + "duplicates";
+
+        try (Stream<Path> stream = Files.list(Path.of(sourceDir))) {
+            Files.createDirectories(Paths.get(duplicatesDir));
             AtomicInteger movedAmount = new AtomicInteger();
             stream
                     .filter(Files::isRegularFile)
@@ -39,7 +41,7 @@ public class DuplicateFilesFinder {
                     .flatMap(Collection::stream)
                     .forEach(fileData -> {
                         try {
-                            Path checksumDir = Paths.get(DUPLICATES_DIR + File.separator + fileData.checksum);
+                            Path checksumDir = Paths.get(duplicatesDir + File.separator + fileData.checksum);
                             Files.createDirectories(checksumDir);
                             Path newFilePath = checksumDir.resolve(fileData.path.getFileName());
                             Files.move(fileData.path, newFilePath);
